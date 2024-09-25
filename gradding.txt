@@ -1,0 +1,26 @@
+# Adelia
+
+-  Code Correctness 20
+-  Functionality 18
+-  Securyity 18
+-  Understanding of the problem 10
+-  Documentation 10
+-  Design choice 5
+
+# Bruh
+
+-  Code Correctness 10
+-  Functionality 20
+-  Securyity 10
+-  Understanding of the problem 10
+-  Documentation 15
+-  Design choice 10
+
+# Jason
+
+-  Code Correctness 15
+-  Functionality 20
+-  Securyity 10
+-  Understanding of the problem 5
+-  Documentation 15
+-  Design choice 15

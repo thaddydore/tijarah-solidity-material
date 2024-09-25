@@ -1,0 +1,168 @@
+drag a created empty file to the visual studio
+-------------------------------------------------
+type in the terminal>
+
+/*yarn -D solc
+yarn ethers
+touch compile.js
+touch Greet.sol*/
+-------------------------------------------------
+in the Greet.sol>
+
+//SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+contract Greet {
+    string public greet = "Hello world";
+}
+-------------------------------------------------
+in the compile.js>
+
+const path = require('node:path');
+const fs = require('node:fs');
+const ethers = require('ethers');
+const solc = require('solc');
+
+const cwd = process.cwd();
+const contractToCompile = process.argv[2]; // to compile 2file: type in the terminal>
+const pathToContract = path.join(cwd, 'contracts', contractToCompile + '.sol');
+// console.log(pathToContract);
+
+const content = fs.readFileSync(pathToContract, { encoding: 'utf8' });
+console.log(content);
+-------------------------------------------------
+move .sol file to a folder of contracts
+compile file to the right folder (contracts and utils)
+-------------------------------------------------
+in the terminal>
+
+node ./utils/compile.js
+OR
+type this
+"compile": "node ./utils/compile.js"
+in the package.json under "scripts:"
+
+npm run compile Greet
+-------------------------------------------------
+in the compile.js>
+
+const path = require('node:path');
+const fs = require('node:fs');
+const ethers = require('ethers');
+const solc = require('solc');
+
+const cwd = process.cwd();
+const contractToCompile = process.argv[2]; 
+// to compile 2file: type in the terminal>
+const pathToContract = path.join(cwd, 'contracts', contractToCompile + '.sol');
+// console.log(pathToContract);
+
+const content = fs.readFileSync(pathToContract, { encoding: 'utf8' });
+// give and argument: type in the terminal>
+const config = {
+    language: 'Solidity',
+    sources: {
+        [contractToCompile]: {
+            content,
+        },
+    },
+    settings: {
+        outputSelection: {
+            '*': {
+                '*': ['abi', 'evm'], // selected all character "*"
+            },
+        },
+    },
+};
+
+const compiledContract = JSON.parse(solc.compile(JSON.stringify(config)));
+
+console.log(JSON.stringify(compiledContract, null, 2));
+-------------------------------------------------
+in the terminal>
+
+const path = require('node:path');
+const fs = require('node:fs');
+const ethers = require('ethers');
+const solc = require('solc');
+
+const cwd = process.cwd();
+const contractToCompile = process.argv[2]; 
+// to compile 2file: type in the terminal>
+const pathToContract = path.join(cwd, 'contracts', contractToCompile + '.sol');
+// console.log(pathToContract);
+
+const content = fs.readFileSync(pathToContract, { encoding: 'utf8' });
+// give and argument: type in the terminal>
+const config = {
+    language: 'Solidity',
+    sources: {
+        [contractToCompile]: {
+            content,
+        },
+    },
+    settings: {
+        outputSelection: {
+            '*': {
+                '*': ['abi', 'evm'], // selected all character "*"
+            },
+        },
+    },
+};
+
+const compiledContract = JSON.parse(solc.compile(JSON.stringify(config)));
+
+console.log(JSON.stringify(compiledContract, null, 2));
+
+const abi = compiledContract
+-------------------------------------------------
+const path = require('node:path');
+const fs = require('node:fs');
+const ethers = require('ethers');
+const solc = require('solc');
+
+async function main() {
+    const cwd = process.cwd();
+    const contractToCompile = process.argv[2]; 
+    // to compile 2file: type in the terminal>
+    const pathToContract = path.join(cwd, 'contracts', contractToCompile + '.sol');
+    // console.log(pathToContract);
+
+    const content = fs.readFileSync(pathToContract, { encoding: 'utf8' });
+    // give and argument: type in the terminal>
+    const config = {
+        language: 'Solidity',
+        sources: {
+            [contractToCompile]: {
+                content,
+            },
+        },
+        settings: {
+            outputSelection: {
+                '*': {
+                    '*': ['*'], // selected all character '*'
+                },
+            },
+        },
+    };
+
+    const compiledContract = JSON.parse(solc.compile(JSON.stringify(config)));
+    // console.log(JSON.stringify(compiledContract, null, 2));
+
+    const abi = compiledContract.contracts[contractToCompile][contractToCompile].abi;
+    const bytecode = compiledContract.contracts[contractToCompile][contractToCompile].evm.bytecode.object;
+
+    // deployment
+    const provider = new ethers.JsonRpcProvider('PROVIDER_URL');
+    const wallet = new ethers.Wallet('PRIVATE_KEY', provider); // provider example: ethereum mainnet
+    const contractFactory = new ethers.ContractFactory(abi, bytecode, wallet);
+    
+    const deployedContract = await contractFactory.deploy();
+    console.log(await deployedContract.getAddress());
+}
+
+main();
+-------------------------------------
+contants.js:
+
+yarn add dotenv
