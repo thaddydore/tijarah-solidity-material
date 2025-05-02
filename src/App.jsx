@@ -14,6 +14,40 @@ const App = () => {
 		setContract(contractInstance);
 	}, []);
 
+	useEffect(() => {
+		const provider = window.ethereum;
+
+		if (!provider) {
+			alert('MetaMask is not installed');
+			return;
+		}
+
+		provider
+			.request({ method: 'eth_requestAccounts' })
+			.then(accounts => {
+				console.log('accounts', accounts);
+			})
+			.catch(error => {
+				console.error('Error requesting accounts:', error);
+			});
+
+		if (provider) {
+			provider.on('accountsChanged', accounts => {
+				console.log('accountsChanged', accounts);
+			});
+
+			provider.on('chainChanged', chainId => {
+				console.log('chainChanged', chainId);
+			});
+
+			provider.on('disconnect', error => {
+				console.log('disconnect', error);
+			});
+		} else {
+			alert('MetaMask is not installed');
+		}
+	}, []);
+
 	console.log(contract, 'contract');
 
 	const handleTest = async () => {
