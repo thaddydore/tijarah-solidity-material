@@ -1,68 +1,57 @@
-import { Contract, JsonRpcProvider } from 'ethers';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useReadContract, useWriteContract } from 'wagmi';
+import { formatAddress } from '../utils/formatAddress';
 import abi from './assets/abi.json';
+import { contractAddress } from '../utils/const';
 
-import { useEffect, useState } from 'react';
 const App = () => {
-	const [contract, setContract] = useState(null);
+	const { address, isConnected } = useAccount();
+	const { connectors, connect, isPending } = useConnect();
+	const { disconnect, isDisconnecting } = useDisconnect();
+	const {
+		writeContract: registerMember,
+		// data: hash,
+		error: memberRegistrationError,
+		isPending: isRegistringMember,
+	} = useWriteContract({});
 
-	useEffect(() => {
-		const providerUrl = import.meta.env.VITE_SEPOLIA_URL;
-		const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
-		const provider = new JsonRpcProvider(providerUrl);
+	const { data: members = [] } = useReadContract({
+		address: contractAddress,
+		abi,
+		functionName: 'getMembers',
+		args: [],
+	});
 
-		const contractInstance = new Contract(contractAddress, abi, provider);
-		setContract(contractInstance);
-	}, []);
-
-	useEffect(() => {
-		const provider = window.ethereum;
-
-		if (!provider) {
-			alert('MetaMask is not installed');
-			return;
-		}
-
-		provider
-			.request({ method: 'eth_requestAccounts' })
-			.then(accounts => {
-				console.log('accounts', accounts);
-			})
-			.catch(error => {
-				console.error('Error requesting accounts:', error);
-			});
-
-		if (provider) {
-			provider.on('accountsChanged', accounts => {
-				console.log('accountsChanged', accounts);
-			});
-
-			provider.on('chainChanged', chainId => {
-				console.log('chainChanged', chainId);
-			});
-
-			provider.on('disconnect', error => {
-				console.log('disconnect', error);
-			});
-		} else {
-			alert('MetaMask is not installed');
-		}
-	}, []);
-
-	console.log(contract, 'contract');
-
-	const handleTest = async () => {
-		try {
-			const response = await contract.isNominated('');
-			console.log(response, 'response');
-		} catch (error) {
-			console.error('Error:', error.message);
-		}
+	const handleMemberRegistration = () => {
+		registerMember({
+			address: contractAddress,
+			abi,
+			functionName: 'registerMember',
+			args: [address],
+		});
 	};
+
+	const connector = connectors[0];
+
+	console.log(members, 'this is balance');
 
 	return (
 		<main>
+			<button key={connector.id} onClick={() => connect({ connector })}>
+				{isPending ? 'Connecting...' : isConnected ? formatAddress(address) : ` Connect with ${connector.name}`}
+			</button>
+
+			<button onClick={disconnect} disabled={!isConnected}>
+				{isDisconnecting ? 'Disconnecting...' : 'Disconnect'}
+			</button>
+
 			<h1>Welcome to our Balloting Project</h1>
-			<button onClick={handleTest}>Test Contract</button>
+
+			<button onClick={handleMemberRegistration}>
+				{' '}
+				{isRegistringMember ? 'Registering...' : 'Register a member'}
+			</button>
+			{memberRegistrationError?.name && <p>{memberRegistrationError?.name}</p>}
 		</main>
 	);
 };
